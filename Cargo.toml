@@ -1,13 +1,17 @@
 [package]
 name = "midi-parse-render"
 version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+edition = "2018"
+license = "MIT/Apache-2.0"
+description = "Utilities for rendering and parsing into/from midi_types::MidiMessage"
+authors = ["Mendelt Siebenga <msiebenga@gmail.com>", "Alex Norman <alex@x37v.info>"]
+categories = ["no-std", "api-bindings", "multimedia::audio"]
+keywords = ["midi"]
+readme = "README.md"
 
 [dependencies]
 
-midi-types = { path = "../midi-types" }
+midi-types = { git = "https://github.com/x37v/midi-types.git", branch = "xnor/status-convertions-rebase" }
 
 [dev-dependencies]
 lazy_static = "1.4.0"
