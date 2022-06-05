@@ -11,7 +11,7 @@ readme = "README.md"
 
 [dependencies]
 
-midi-types = { git = "https://github.com/x37v/midi-types.git", branch = "xnor/status-convertions-rebase" }
+midi-types = { git = "https://github.com/rust-midi/midi-types.git", branch = "main" }
 
 [dev-dependencies]
 lazy_static = "1.4.0"
