@@ -4,14 +4,12 @@ use midi_types::{status::*, MidiMessage};
 
 /// Trait for rendering a MidiMessage into a byte slice.
 pub trait MidiRenderSlice: Sized {
-    fn try_render_slice(&self, buf: &mut [u8]) -> Result<usize, MidiRenderError>;
-}
-
-#[derive(Debug, PartialEq, Clone)]
-/// Errors rendering
-pub enum MidiRenderError {
-    ///Input buffer wasn't long enough to render message
-    BufferTooShort,
+    /// Render to a slice.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the slice length is less than 3.
+    fn render_slice(&self, buf: &mut [u8]) -> usize;
 }
 
 //helper to render 3 byte messages
@@ -21,17 +19,13 @@ fn chan3byte<T0: Into<u8> + Copy, T1: Into<u8> + Copy, C: Into<u8> + Copy>(
     chan: &C,
     d0: &T0,
     d1: &T1,
-) -> Result<usize, MidiRenderError> {
-    if buf.len() >= 3 {
-        let chan: u8 = (*chan).into();
-        let status = status | chan;
-        for (o, i) in buf.iter_mut().zip(&[status, (*d0).into(), (*d1).into()]) {
-            *o = *i;
-        }
-        Ok(3)
-    } else {
-        Err(MidiRenderError::BufferTooShort)
+) -> usize {
+    let chan: u8 = (*chan).into();
+    let status = status | chan;
+    for (o, i) in buf.iter_mut().zip(&[status, (*d0).into(), (*d1).into()]) {
+        *o = *i;
     }
+    3
 }
 
 //helper to render 2 byte messages
@@ -40,32 +34,25 @@ fn chan2byte<T0: Into<u8> + Copy, C: Into<u8> + Copy>(
     status: u8,
     chan: &C,
     d0: &T0,
-) -> Result<usize, MidiRenderError> {
-    if buf.len() >= 2 {
-        let chan: u8 = (*chan).into();
-        let status = status | chan;
-        for (o, i) in buf.iter_mut().zip(&[status, (*d0).into()]) {
-            *o = *i;
-        }
-        Ok(2)
-    } else {
-        Err(MidiRenderError::BufferTooShort)
+) -> usize {
+    let chan: u8 = (*chan).into();
+    let status = status | chan;
+    for (o, i) in buf.iter_mut().zip(&[status, (*d0).into()]) {
+        *o = *i;
     }
+    2
 }
 
 //helper to render 1 byte messages
-fn chan1byte(buf: &mut [u8], status: u8) -> Result<usize, MidiRenderError> {
-    if buf.len() >= 1 {
-        buf[0] = status;
-        Ok(1)
-    } else {
-        Err(MidiRenderError::BufferTooShort)
-    }
+fn chan1byte(buf: &mut [u8], status: u8) -> usize {
+    buf[0] = status;
+    1
 }
 
 impl MidiRenderSlice for MidiMessage {
     /// Render into a raw byte buffer, return the number of bytes rendered
-    fn try_render_slice(&self, buf: &mut [u8]) -> Result<usize, MidiRenderError> {
+    fn render_slice(&self, buf: &mut [u8]) -> usize {
+        assert!(buf.len() >= 3);
         match self {
             MidiMessage::NoteOff(c, n, v) => chan3byte(buf, NOTE_OFF, c, n, v),
             MidiMessage::NoteOn(c, n, v) => chan3byte(buf, NOTE_ON, c, n, v),
@@ -96,80 +83,63 @@ impl MidiRenderSlice for MidiMessage {
 
 #[cfg(test)]
 mod test {
-    use super::*;
-    use crate::test::{TEST_1BYTE, TEST_2BYTE, TEST_3BYTE};
+    use {
+        super::*,
+        crate::test::{TEST_1BYTE, TEST_2BYTE, TEST_3BYTE},
+    };
 
     #[test]
-    fn render_err() {
-        let mut buf0: [u8; 0] = [];
-        let mut buf1 = [0];
-        let mut buf2 = [0, 0];
-        for v in (*TEST_1BYTE).iter() {
-            assert_eq!(
-                Err(MidiRenderError::BufferTooShort),
-                v.try_render_slice(&mut buf0),
-                "{:?}",
-                v
-            );
-        }
+    #[should_panic]
+    fn render_1_0_panic() {
+        let mut buf: [u8; 0] = [];
+        (*TEST_1BYTE)[0].render_slice(&mut buf);
+    }
 
-        for v in (*TEST_2BYTE).iter() {
-            assert_eq!(
-                Err(MidiRenderError::BufferTooShort),
-                v.try_render_slice(&mut buf0),
-                "{:?}",
-                v
-            );
-            assert_eq!(
-                Err(MidiRenderError::BufferTooShort),
-                v.try_render_slice(&mut buf1),
-                "{:?}",
-                v
-            );
-        }
+    #[test]
+    #[should_panic]
+    fn render_1_1_panic() {
+        let mut buf: [u8; 1] = [0; 1];
+        (*TEST_1BYTE)[0].render_slice(&mut buf);
+    }
 
-        for v in (*TEST_3BYTE).iter() {
-            assert_eq!(
-                Err(MidiRenderError::BufferTooShort),
-                v.try_render_slice(&mut buf0),
-                "{:?}",
-                v
-            );
-            assert_eq!(
-                Err(MidiRenderError::BufferTooShort),
-                v.try_render_slice(&mut buf1),
-                "{:?}",
-                v
-            );
-            assert_eq!(
-                Err(MidiRenderError::BufferTooShort),
-                v.try_render_slice(&mut buf2),
-                "{:?}",
-                v
-            );
-        }
+    #[test]
+    #[should_panic]
+    fn render_1_2_panic() {
+        let mut buf: [u8; 2] = [0; 2];
+        (*TEST_1BYTE)[0].render_slice(&mut buf);
+    }
+
+    #[test]
+    #[should_panic]
+    fn render_2_2_panic() {
+        let mut buf: [u8; 2] = [0; 2];
+        (*TEST_2BYTE)[0].render_slice(&mut buf);
+    }
+
+    #[test]
+    #[should_panic]
+    fn render_3_1_panic() {
+        let mut buf: [u8; 2] = [0; 2];
+        (*TEST_3BYTE)[0].render_slice(&mut buf);
     }
 
     #[test]
     fn render_ok() {
-        let mut buf1 = [0];
-        let mut buf2 = [0, 0];
         let mut buf3 = [0, 0, 0];
         let mut buf100 = [0; 100];
         for v in (*TEST_1BYTE).iter() {
-            assert_eq!(Ok(1), v.try_render_slice(&mut buf1), "{:?}", v);
-            assert_eq!(Ok(1), v.try_render_slice(&mut buf2), "{:?}", v);
-            assert_eq!(Ok(1), v.try_render_slice(&mut buf100), "{:?}", v);
+            assert_eq!(1, v.render_slice(&mut buf3), "{:?}", v);
+            assert_eq!(1, v.render_slice(&mut buf100), "{:?}", v);
         }
 
         for v in (*TEST_2BYTE).iter() {
-            assert_eq!(Ok(2), v.try_render_slice(&mut buf2), "{:?}", v);
-            assert_eq!(Ok(2), v.try_render_slice(&mut buf100), "{:?}", v);
+            assert_eq!(2, v.render_slice(&mut buf3), "{:?}", v);
+            assert_eq!(2, v.render_slice(&mut buf100), "{:?}", v);
         }
 
         for v in (*TEST_3BYTE).iter() {
-            assert_eq!(Ok(3), v.try_render_slice(&mut buf3), "{:?}", v);
-            assert_eq!(Ok(3), v.try_render_slice(&mut buf100), "{:?}", v);
+            assert_eq!(3, v.render_slice(&mut buf3), "{:?}", v);
+            assert_eq!(3, v.render_slice(&mut buf100), "{:?}", v);
         }
     }
 }
