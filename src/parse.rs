@@ -3,6 +3,12 @@ use midi_types::{
     status::*, Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7,
 };
 
+/// Trait for parsing a byte slice into a MidiMessage
+pub trait MidiParseSlice: Sized {
+    /// try to parse
+    fn try_parse_slice(buf: &[u8]) -> Result<Self, ParseError>;
+}
+
 /// A parser that parses a byte at a time.
 #[derive(Debug, Clone, PartialEq)]
 pub struct MidiByteStreamParser {
@@ -261,75 +267,79 @@ fn check_len<F: Fn() -> Result<MidiMessage, ParseError>>(
 }
 
 /// Parse a byte slice for a MidiMessage
-pub fn parse_slice(buf: &[u8]) -> Result<MidiMessage, ParseError> {
-    if buf.len() == 0 {
-        Err(ParseError::BufferTooShort)
-    } else {
-        let chan = |status: u8| -> Channel { Channel::from(status & 0x0F) };
-        match buf[0] {
-            //1 byte
-            TUNE_REQUEST => Ok(MidiMessage::TuneRequest),
-            TIMING_CLOCK => Ok(MidiMessage::TimingClock),
-            START => Ok(MidiMessage::Start),
-            CONTINUE => Ok(MidiMessage::Continue),
-            STOP => Ok(MidiMessage::Stop),
-            ACTIVE_SENSING => Ok(MidiMessage::ActiveSensing),
-            RESET => Ok(MidiMessage::Reset),
+impl MidiParseSlice for MidiMessage {
+    fn try_parse_slice(buf: &[u8]) -> Result<MidiMessage, ParseError> {
+        if buf.len() == 0 {
+            Err(ParseError::BufferTooShort)
+        } else {
+            let chan = |status: u8| -> Channel { Channel::from(status & 0x0F) };
+            match buf[0] {
+                //1 byte
+                TUNE_REQUEST => Ok(MidiMessage::TuneRequest),
+                TIMING_CLOCK => Ok(MidiMessage::TimingClock),
+                START => Ok(MidiMessage::Start),
+                CONTINUE => Ok(MidiMessage::Continue),
+                STOP => Ok(MidiMessage::Stop),
+                ACTIVE_SENSING => Ok(MidiMessage::ActiveSensing),
+                RESET => Ok(MidiMessage::Reset),
 
-            //2 byte
-            s @ PROGRAM_CHANGE..=PROGRAM_CHANGE_END => check_len(buf, 2, || {
-                Ok(MidiMessage::ProgramChange(chan(s), Program::from(buf[1])))
-            }),
-            s @ CHANNEL_PRESSURE..=CHANNEL_PRESSURE_END => check_len(buf, 2, || {
-                Ok(MidiMessage::ChannelPressure(chan(s), Value7::from(buf[1])))
-            }),
-            QUARTER_FRAME => check_len(buf, 2, || {
-                Ok(MidiMessage::QuarterFrame(QuarterFrame::from(buf[1])))
-            }),
-            SONG_SELECT => check_len(buf, 2, || Ok(MidiMessage::SongSelect(Value7::from(buf[1])))),
+                //2 byte
+                s @ PROGRAM_CHANGE..=PROGRAM_CHANGE_END => check_len(buf, 2, || {
+                    Ok(MidiMessage::ProgramChange(chan(s), Program::from(buf[1])))
+                }),
+                s @ CHANNEL_PRESSURE..=CHANNEL_PRESSURE_END => check_len(buf, 2, || {
+                    Ok(MidiMessage::ChannelPressure(chan(s), Value7::from(buf[1])))
+                }),
+                QUARTER_FRAME => check_len(buf, 2, || {
+                    Ok(MidiMessage::QuarterFrame(QuarterFrame::from(buf[1])))
+                }),
+                SONG_SELECT => {
+                    check_len(buf, 2, || Ok(MidiMessage::SongSelect(Value7::from(buf[1]))))
+                }
 
-            //3 byte
-            s @ NOTE_OFF..=NOTE_OFF_END => check_len(buf, 3, || {
-                Ok(MidiMessage::NoteOff(
-                    chan(s),
-                    Note::from(buf[1]),
-                    Value7::from(buf[2]),
-                ))
-            }),
-            s @ NOTE_ON..=NOTE_ON_END => check_len(buf, 3, || {
-                Ok(MidiMessage::NoteOn(
-                    chan(s),
-                    Note::from(buf[1]),
-                    Value7::from(buf[2]),
-                ))
-            }),
-            s @ KEY_PRESSURE..=KEY_PRESSURE_END => check_len(buf, 3, || {
-                Ok(MidiMessage::KeyPressure(
-                    chan(s),
-                    Note::from(buf[1]),
-                    Value7::from(buf[2]),
-                ))
-            }),
-            s @ CONTROL_CHANGE..=CONTROL_CHANGE_END => check_len(buf, 3, || {
-                Ok(MidiMessage::ControlChange(
-                    chan(s),
-                    Control::from(buf[1]),
-                    Value7::from(buf[2]),
-                ))
-            }),
-            s @ PITCH_BEND_CHANGE..=PITCH_BEND_CHANGE_END => check_len(buf, 3, || {
-                Ok(MidiMessage::PitchBendChange(
-                    chan(s),
-                    Value14::from((buf[1], buf[2])),
-                ))
-            }),
-            SONG_POSITION_POINTER => check_len(buf, 3, || {
-                Ok(MidiMessage::SongPositionPointer(Value14::from((
-                    buf[1], buf[2],
-                ))))
-            }),
+                //3 byte
+                s @ NOTE_OFF..=NOTE_OFF_END => check_len(buf, 3, || {
+                    Ok(MidiMessage::NoteOff(
+                        chan(s),
+                        Note::from(buf[1]),
+                        Value7::from(buf[2]),
+                    ))
+                }),
+                s @ NOTE_ON..=NOTE_ON_END => check_len(buf, 3, || {
+                    Ok(MidiMessage::NoteOn(
+                        chan(s),
+                        Note::from(buf[1]),
+                        Value7::from(buf[2]),
+                    ))
+                }),
+                s @ KEY_PRESSURE..=KEY_PRESSURE_END => check_len(buf, 3, || {
+                    Ok(MidiMessage::KeyPressure(
+                        chan(s),
+                        Note::from(buf[1]),
+                        Value7::from(buf[2]),
+                    ))
+                }),
+                s @ CONTROL_CHANGE..=CONTROL_CHANGE_END => check_len(buf, 3, || {
+                    Ok(MidiMessage::ControlChange(
+                        chan(s),
+                        Control::from(buf[1]),
+                        Value7::from(buf[2]),
+                    ))
+                }),
+                s @ PITCH_BEND_CHANGE..=PITCH_BEND_CHANGE_END => check_len(buf, 3, || {
+                    Ok(MidiMessage::PitchBendChange(
+                        chan(s),
+                        Value14::from((buf[1], buf[2])),
+                    ))
+                }),
+                SONG_POSITION_POINTER => check_len(buf, 3, || {
+                    Ok(MidiMessage::SongPositionPointer(Value14::from((
+                        buf[1], buf[2],
+                    ))))
+                }),
 
-            _ => Err(ParseError::MessageNotFound),
+                _ => Err(ParseError::MessageNotFound),
+            }
         }
     }
 }
