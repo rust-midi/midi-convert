@@ -1,3 +1,7 @@
-# midi-parse-render
+# midi-convert
 
-Utilities for rendering and parsing into/from `midi_types::MidiMessage`
+Utilities for converting to/from `midi_types::MidiMessage`
+
+## Links
+
+* [midi-types](https://github.com/rust-midi/midi-types)
