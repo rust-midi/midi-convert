@@ -1,9 +1,9 @@
 [package]
-name = "midi-parse-render"
+name = "midi-convert"
 version = "0.1.0"
 edition = "2018"
 license = "MIT/Apache-2.0"
-description = "Utilities for rendering and parsing into/from midi_types::MidiMessage"
+description = "Utilities for converting into/from midi_types::MidiMessage"
 authors = ["Mendelt Siebenga <msiebenga@gmail.com>", "Alex Norman <alex@x37v.info>"]
 categories = ["no-std", "api-bindings", "multimedia::audio"]
 keywords = ["midi"]
