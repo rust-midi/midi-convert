@@ -4,7 +4,7 @@ use midi_types::{
 };
 
 /// Trait for parsing a byte slice into a MidiMessage
-pub trait MidiParseSlice: Sized {
+pub trait MidiTryParseSlice: Sized {
     /// try to parse
     fn try_parse_slice(buf: &[u8]) -> Result<Self, ParseError>;
 }
@@ -267,7 +267,7 @@ fn check_len<F: Fn() -> Result<MidiMessage, ParseError>>(
 }
 
 /// Parse a byte slice for a MidiMessage
-impl MidiParseSlice for MidiMessage {
+impl MidiTryParseSlice for MidiMessage {
     fn try_parse_slice(buf: &[u8]) -> Result<MidiMessage, ParseError> {
         if buf.len() == 0 {
             Err(ParseError::BufferTooShort)

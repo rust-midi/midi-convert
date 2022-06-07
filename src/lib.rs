@@ -8,7 +8,7 @@ pub use {crate::parse::*, crate::render::*, midi_types};
 #[cfg(test)]
 pub(crate) mod test {
     use {
-        crate::{parse::MidiParseSlice, render::MidiRenderSlice},
+        crate::{parse::MidiTryParseSlice, render::MidiRenderSlice},
         midi_types::{Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7},
     };
 
