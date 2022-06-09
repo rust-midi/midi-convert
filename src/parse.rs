@@ -3,10 +3,19 @@ use midi_types::{
     status::*, Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7,
 };
 
+#[derive(Debug, PartialEq, Clone)]
+/// Errors parsing.
+pub enum MidiParseError {
+    ///Input buffer wasn't long enough to parse anything
+    BufferTooShort,
+    ///Couldn't find a valid message
+    MessageNotFound,
+}
+
 /// Trait for parsing a byte slice into a MidiMessage
 pub trait MidiTryParseSlice: Sized {
     /// try to parse
-    fn try_parse_slice(buf: &[u8]) -> Result<Self, ParseError>;
+    fn try_parse_slice(buf: &[u8]) -> Result<Self, MidiParseError>;
 }
 
 /// A parser that parses a byte at a time.
@@ -242,35 +251,24 @@ const PITCH_BEND_CHANGE_END: u8 = PITCH_BEND_CHANGE + 0x0F;
 const PROGRAM_CHANGE_END: u8 = PROGRAM_CHANGE + 0x0F;
 const CHANNEL_PRESSURE_END: u8 = CHANNEL_PRESSURE + 0x0F;
 
-#[derive(Debug, PartialEq, Clone)]
-/// Errors parsing.
-pub enum ParseError {
-    ///Input buffer wasn't long enough to parse anything
-    BufferTooShort,
-    ///Couldn't find a valid message
-    MessageNotFound,
-    ///Partial valid message but
-    PartialData,
-}
-
 //parse helper guard
-fn check_len<F: Fn() -> Result<MidiMessage, ParseError>>(
+fn check_len<F: Fn() -> Result<MidiMessage, MidiParseError>>(
     buf: &[u8],
     len: usize,
     func: F,
-) -> Result<MidiMessage, ParseError> {
+) -> Result<MidiMessage, MidiParseError> {
     if buf.len() >= len {
         func()
     } else {
-        Err(ParseError::BufferTooShort)
+        Err(MidiParseError::BufferTooShort)
     }
 }
 
 /// Parse a byte slice for a MidiMessage
 impl MidiTryParseSlice for MidiMessage {
-    fn try_parse_slice(buf: &[u8]) -> Result<MidiMessage, ParseError> {
+    fn try_parse_slice(buf: &[u8]) -> Result<MidiMessage, MidiParseError> {
         if buf.len() == 0 {
-            Err(ParseError::BufferTooShort)
+            Err(MidiParseError::BufferTooShort)
         } else {
             let chan = |status: u8| -> Channel { Channel::from(status & 0x0F) };
             match buf[0] {
@@ -338,7 +336,7 @@ impl MidiTryParseSlice for MidiMessage {
                     ))))
                 }),
 
-                _ => Err(ParseError::MessageNotFound),
+                _ => Err(MidiParseError::MessageNotFound),
             }
         }
     }
