@@ -1,3 +1,35 @@
+//! # midi_convert
+//!
+//! Utilities for converting to/from `midi_types::MidiMessage`
+//!
+//! # Examples
+//!
+//! Render a `MidiMessage` into a byte slice.
+//! ```
+//! use midi_convert::{MidiRenderSlice, midi_types::MidiMessage};
+//! let mut s = [0u8; 3];
+//! let m = MidiMessage::NoteOn(2.into(), 0x76.into(), 0x34.into());
+//! assert_eq!(m.render_slice(&mut s), 3);
+//! assert_eq!(s, [0x92, 0x76, 0x34]);
+//! ```
+//!
+//! Try to extract a `MidiMessage` from a byte slice.
+//! ```
+//! use midi_convert::{MidiTryParseSlice, MidiParseError, midi_types::MidiMessage};
+//! assert_eq!(MidiMessage::try_parse_slice(&[0x92, 0x76, 0x34]), Ok(MidiMessage::NoteOn(2.into(), 0x76.into(), 0x34.into())));
+//! assert_eq!(MidiMessage::try_parse_slice(&[0x92]), Err(MidiParseError::BufferTooShort));
+//! ```
+//!
+//! Parse a byte stream, returning `MidiMessage` found along the way.
+//! ```
+//! use midi_convert::{MidiByteStreamParser, midi_types::MidiMessage};
+//! let mut parser = MidiByteStreamParser::new();
+//! assert_eq!(parser.parse(0x92), None);
+//! assert_eq!(parser.parse(0x76), None);
+//! assert_eq!(parser.parse(0x34), Some(MidiMessage::NoteOn(2.into(), 0x76.into(), 0x34.into())));
+//! ```
+//!
+
 #![no_std]
 #[warn(missing_debug_implementations, missing_docs)]
 mod parse;
