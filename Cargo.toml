@@ -10,7 +10,6 @@ keywords = ["midi"]
 readme = "README.md"
 
 [dependencies]
-
 midi-types = { version = "0.1.2" }
 
 [dev-dependencies]
