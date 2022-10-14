@@ -4,6 +4,7 @@ use midi_types::{
 };
 
 #[derive(Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 /// Errors parsing.
 pub enum MidiParseError {
     ///Input buffer wasn't long enough to parse anything
@@ -20,11 +21,13 @@ pub trait MidiTryParseSlice: Sized {
 
 /// A parser that parses a byte at a time.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct MidiByteStreamParser {
     state: MidiParserState,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 enum MidiParserState {
     Idle,
     NoteOnRecvd(Channel),
