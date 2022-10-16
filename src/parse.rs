@@ -78,9 +78,7 @@ fn split_message_and_channel(byte: u8) -> (u8, Channel) {
 impl MidiByteStreamParser {
     /// Initialize midiparser state
     pub fn new() -> Self {
-        MidiByteStreamParser {
-            state: MidiParserState::Idle,
-        }
+        Self::default()
     }
 
     /// Parse midi event byte by byte. Call this whenever a byte is received. When a midi-event is
@@ -246,6 +244,14 @@ impl MidiByteStreamParser {
     }
 }
 
+impl Default for MidiByteStreamParser {
+    fn default() -> Self {
+        MidiByteStreamParser {
+            state: MidiParserState::Idle,
+        }
+    }
+}
+
 const NOTE_OFF_END: u8 = NOTE_OFF + 0x0F;
 const NOTE_ON_END: u8 = NOTE_ON + 0x0F;
 const KEY_PRESSURE_END: u8 = KEY_PRESSURE + 0x0F;
@@ -270,7 +276,7 @@ fn check_len<F: Fn() -> Result<MidiMessage, MidiParseError>>(
 /// Parse a byte slice for a MidiMessage
 impl MidiTryParseSlice for MidiMessage {
     fn try_parse_slice(buf: &[u8]) -> Result<MidiMessage, MidiParseError> {
-        if buf.len() == 0 {
+        if buf.is_empty() {
             Err(MidiParseError::BufferTooShort)
         } else {
             let chan = |status: u8| -> Channel { Channel::from(status & 0x0F) };
