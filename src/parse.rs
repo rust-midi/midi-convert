@@ -3,7 +3,7 @@ use midi_types::{
     status::*, Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7,
 };
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 /// Errors parsing.
 pub enum MidiParseError {
