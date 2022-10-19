@@ -20,15 +20,16 @@ pub trait MidiTryParseSlice: Sized {
 }
 
 /// A parser that parses a byte at a time.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct MidiByteStreamParser {
     state: MidiParserState,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 enum MidiParserState {
+    #[default]
     Idle,
     NoteOnRecvd(Channel),
     NoteOnNoteRecvd(Channel, Note),
@@ -240,14 +241,6 @@ impl MidiByteStreamParser {
                 MidiParserState::SongSelectRecvd => Some(MidiMessage::SongSelect(byte.into())),
                 _ => None,
             }
-        }
-    }
-}
-
-impl Default for MidiByteStreamParser {
-    fn default() -> Self {
-        MidiByteStreamParser {
-            state: MidiParserState::Idle,
         }
     }
 }
