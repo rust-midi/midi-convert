@@ -9,7 +9,7 @@ pub trait MidiRenderSlice: Sized {
     /// # Panics
     ///
     /// Panics if the slice length is less than 3.
-    fn render_slice(&self, buf: &mut [u8]) -> usize;
+    fn render_slice<const BUF_LEN: usize>(&self, buf: &mut [u8; BUF_LEN]) -> usize;
 }
 
 //helper to render 3 byte messages
@@ -51,8 +51,8 @@ fn chan1byte(buf: &mut [u8], status: u8) -> usize {
 
 impl MidiRenderSlice for MidiMessage {
     /// Render into a raw byte buffer, return the number of bytes rendered
-    fn render_slice(&self, buf: &mut [u8]) -> usize {
-        assert!(buf.len() >= 3);
+    fn render_slice<const BUF_LEN: usize>(&self, buf: &mut [u8; BUF_LEN]) -> usize {
+        assert!(BUF_LEN >= 3);
         match self {
             MidiMessage::NoteOff(c, n, v) => chan3byte(buf, NOTE_OFF, c, n, v),
             MidiMessage::NoteOn(c, n, v) => chan3byte(buf, NOTE_ON, c, n, v),
