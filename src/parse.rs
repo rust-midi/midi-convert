@@ -7,9 +7,10 @@ use midi_types::{
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 /// Errors parsing.
 pub enum MidiParseError {
-    ///Input buffer wasn't long enough to parse anything
+    /// Input buffer wasn't long enough to parse anything
     BufferTooShort,
-    ///Couldn't find a valid message
+
+    /// Couldn't find a valid message
     MessageNotFound,
 }
 
@@ -22,7 +23,7 @@ pub trait MidiTryParseSlice: Sized {
 /// A parser that parses a byte at a time.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-pub struct MidiByteStreamParser {
+pub struct MidiParser {
     state: MidiParserState,
 }
 
@@ -75,7 +76,7 @@ fn split_message_and_channel(byte: u8) -> (u8, Channel) {
 /// Parse Midi messages byte at a time.
 ///
 /// Returns parsed Midi messages whenever one is completed.
-impl MidiByteStreamParser {
+impl MidiParser {
     /// Initialize midiparser state
     pub fn new() -> Self {
         Self::default()
@@ -244,9 +245,9 @@ impl MidiByteStreamParser {
     }
 }
 
-impl Default for MidiByteStreamParser {
+impl Default for MidiParser {
     fn default() -> Self {
-        MidiByteStreamParser {
+        MidiParser {
             state: MidiParserState::Idle,
         }
     }
@@ -382,7 +383,7 @@ mod tests {
 
     #[test]
     fn should_parse_note_off() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0x82, 0x76, 0x34],
             &[MidiMessage::NoteOff(2.into(), 0x76.into(), 0x34.into())],
         );
@@ -390,7 +391,7 @@ mod tests {
 
     #[test]
     fn should_handle_note_off_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0x82, 0x76, 0x34, // First note_off
                 0x33, 0x65, // Second note_off without status byte
@@ -404,7 +405,7 @@ mod tests {
 
     #[test]
     fn should_parse_note_on() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0x91, 0x04, 0x34],
             &[MidiMessage::NoteOn(1.into(), 4.into(), 0x34.into())],
         );
@@ -412,7 +413,7 @@ mod tests {
 
     #[test]
     fn should_handle_note_on_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0x92, 0x76, 0x34, // First note_on
                 0x33, 0x65, // Second note on without status byte
@@ -426,7 +427,7 @@ mod tests {
 
     #[test]
     fn should_parse_keypressure() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0xAA, 0x13, 0x34],
             &[MidiMessage::KeyPressure(
                 10.into(),
@@ -438,7 +439,7 @@ mod tests {
 
     #[test]
     fn should_handle_keypressure_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xA8, 0x77, 0x03, // First key_pressure
                 0x14, 0x56, // Second key_pressure without status byte
@@ -452,7 +453,7 @@ mod tests {
 
     #[test]
     fn should_parse_control_change() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0xB2, 0x76, 0x34],
             &[MidiMessage::ControlChange(
                 2.into(),
@@ -464,7 +465,7 @@ mod tests {
 
     #[test]
     fn should_parse_control_change_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xb3, 0x3C, 0x18, // First control change
                 0x43, 0x01, // Second control change without status byte
@@ -478,7 +479,7 @@ mod tests {
 
     #[test]
     fn should_parse_program_change() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0xC9, 0x15],
             &[MidiMessage::ProgramChange(9.into(), 0x15.into())],
         );
@@ -486,7 +487,7 @@ mod tests {
 
     #[test]
     fn should_parse_program_change_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xC3, 0x67, // First program change
                 0x01, // Second program change without status byte
@@ -500,7 +501,7 @@ mod tests {
 
     #[test]
     fn should_parse_channel_pressure() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0xDD, 0x37],
             &[MidiMessage::ChannelPressure(13.into(), 0x37.into())],
         );
@@ -508,7 +509,7 @@ mod tests {
 
     #[test]
     fn should_parse_channel_pressure_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, 0x77, // First channel pressure
                 0x43, // Second channel pressure without status byte
@@ -522,7 +523,7 @@ mod tests {
 
     #[test]
     fn should_parse_pitchbend() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0xE8, 0x14, 0x56],
             &[MidiMessage::PitchBendChange(8.into(), (0x56, 0x14).into())],
         );
@@ -530,7 +531,7 @@ mod tests {
 
     #[test]
     fn should_parse_pitchbend_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xE3, 0x3C, 0x18, // First pitchbend
                 0x43, 0x01, // Second pitchbend without status byte
@@ -544,13 +545,12 @@ mod tests {
 
     #[test]
     fn should_parse_quarter_frame() {
-        MidiByteStreamParser::new()
-            .assert_result(&[0xf1, 0x7f], &[MidiMessage::QuarterFrame(0x7f.into())]);
+        MidiParser::new().assert_result(&[0xf1, 0x7f], &[MidiMessage::QuarterFrame(0x7f.into())]);
     }
 
     #[test]
     fn should_handle_quarter_frame_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xf1, 0x7f, // Send quarter frame
                 0x56, // Only send data of next quarter frame
@@ -564,7 +564,7 @@ mod tests {
 
     #[test]
     fn should_parse_song_position_pointer() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[0xf2, 0x7f, 0x68],
             &[MidiMessage::SongPositionPointer((0x68, 0x7f).into())],
         );
@@ -572,7 +572,7 @@ mod tests {
 
     #[test]
     fn should_handle_song_position_pointer_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xf2, 0x7f, 0x68, // Send song position pointer
                 0x23, 0x7b, // Only send data of next song position pointer
@@ -586,13 +586,12 @@ mod tests {
 
     #[test]
     fn should_parse_song_select() {
-        MidiByteStreamParser::new()
-            .assert_result(&[0xf3, 0x3f], &[MidiMessage::SongSelect(0x3f.into())]);
+        MidiParser::new().assert_result(&[0xf3, 0x3f], &[MidiMessage::SongSelect(0x3f.into())]);
     }
 
     #[test]
     fn should_handle_song_select_running_state() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xf3, 0x3f, // Send song select
                 0x00, // Only send data for next song select
@@ -606,12 +605,12 @@ mod tests {
 
     #[test]
     fn should_parse_tune_request() {
-        MidiByteStreamParser::new().assert_result(&[0xf6], &[MidiMessage::TuneRequest]);
+        MidiParser::new().assert_result(&[0xf6], &[MidiMessage::TuneRequest]);
     }
 
     #[test]
     fn should_interrupt_parsing_for_tune_request() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0x92, 0x76, // start note_on message
                 0xf6, // interrupt with tune request
@@ -640,7 +639,7 @@ mod tests {
 
     #[test]
     fn should_interrupt_parsing_for_undefined_message() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0x92, 0x76, // start note_on message
                 0xf5, // interrupt with undefined message
@@ -652,12 +651,12 @@ mod tests {
 
     #[test]
     fn should_parse_timingclock_message() {
-        MidiByteStreamParser::new().assert_result(&[0xf8], &[MidiMessage::TimingClock]);
+        MidiParser::new().assert_result(&[0xf8], &[MidiMessage::TimingClock]);
     }
 
     #[test]
     fn should_parse_timingclock_message_as_realtime() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, // Start channel pressure event
                 0xf8, // interupt with midi timing clock
@@ -672,12 +671,12 @@ mod tests {
 
     #[test]
     fn should_parse_start_message() {
-        MidiByteStreamParser::new().assert_result(&[0xfa], &[MidiMessage::Start]);
+        MidiParser::new().assert_result(&[0xfa], &[MidiMessage::Start]);
     }
 
     #[test]
     fn should_parse_start_message_as_realtime() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, // Start channel pressure event
                 0xfa, // interupt with start
@@ -692,12 +691,12 @@ mod tests {
 
     #[test]
     fn should_parse_continue_message() {
-        MidiByteStreamParser::new().assert_result(&[0xfb], &[MidiMessage::Continue]);
+        MidiParser::new().assert_result(&[0xfb], &[MidiMessage::Continue]);
     }
 
     #[test]
     fn should_parse_continue_message_as_realtime() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, // Start channel pressure event
                 0xfb, // interupt with continue
@@ -712,12 +711,12 @@ mod tests {
 
     #[test]
     fn should_parse_stop_message() {
-        MidiByteStreamParser::new().assert_result(&[0xfc], &[MidiMessage::Stop]);
+        MidiParser::new().assert_result(&[0xfc], &[MidiMessage::Stop]);
     }
 
     #[test]
     fn should_parse_stop_message_as_realtime() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, // Start channel pressure event
                 0xfc, // interupt with stop
@@ -732,12 +731,12 @@ mod tests {
 
     #[test]
     fn should_parse_activesensing_message() {
-        MidiByteStreamParser::new().assert_result(&[0xfe], &[MidiMessage::ActiveSensing]);
+        MidiParser::new().assert_result(&[0xfe], &[MidiMessage::ActiveSensing]);
     }
 
     #[test]
     fn should_parse_activesensing_message_as_realtime() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, // Start channel pressure event
                 0xfe, // interupt with activesensing
@@ -752,12 +751,12 @@ mod tests {
 
     #[test]
     fn should_parse_reset_message() {
-        MidiByteStreamParser::new().assert_result(&[0xff], &[MidiMessage::Reset]);
+        MidiParser::new().assert_result(&[0xff], &[MidiMessage::Reset]);
     }
 
     #[test]
     fn should_parse_reset_message_as_realtime() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0xD6, // Start channel pressure event
                 0xff, // interupt with reset
@@ -772,7 +771,7 @@ mod tests {
 
     #[test]
     fn should_ignore_incomplete_messages() {
-        MidiByteStreamParser::new().assert_result(
+        MidiParser::new().assert_result(
             &[
                 0x92, 0x1b, // Start note off message
                 0x82, 0x76, 0x34, // continue with a complete note on message
@@ -781,7 +780,7 @@ mod tests {
         );
     }
 
-    impl MidiByteStreamParser {
+    impl MidiParser {
         /// Test helper function, asserts if a slice of bytes parses to some set of midi events
         fn assert_result(&mut self, bytes: &[u8], expected_events: &[MidiMessage]) {
             let events: Vec<MidiMessage> = bytes
