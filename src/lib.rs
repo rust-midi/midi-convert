@@ -6,7 +6,9 @@
 //!
 //! Render a `MidiMessage` into a byte slice.
 //! ```
-//! use midi_convert::{MidiRenderSlice, midi_types::MidiMessage};
+//! use midi_convert::render_slice::MidiRenderSlice;
+//! use midi_types::MidiMessage;
+//!
 //! let mut s = [0u8; 3];
 //! let m = MidiMessage::NoteOn(2.into(), 0x76.into(), 0x34.into());
 //! assert_eq!(m.render_slice(&mut s), 3);
@@ -15,15 +17,19 @@
 //!
 //! Try to extract a `MidiMessage` from a byte slice.
 //! ```
-//! use midi_convert::{MidiTryParseSlice, MidiParseError, midi_types::MidiMessage};
+//! use midi_convert::parse::{MidiTryParseSlice, MidiParseError};
+//! use midi_types::MidiMessage;
+//!
 //! assert_eq!(MidiMessage::try_parse_slice(&[0x92, 0x76, 0x34]), Ok(MidiMessage::NoteOn(2.into(), 0x76.into(), 0x34.into())));
 //! assert_eq!(MidiMessage::try_parse_slice(&[0x92]), Err(MidiParseError::BufferTooShort));
 //! ```
 //!
 //! Parse a byte stream, returning `MidiMessage` found along the way.
 //! ```
-//! use midi_convert::{MidiByteStreamParser, midi_types::MidiMessage};
-//! let mut parser = MidiByteStreamParser::new();
+//! use midi_convert::parse::{MidiParser};
+//! use midi_types::MidiMessage;
+//!
+//! let mut parser = MidiParser::new();
 //! assert_eq!(parser.parse(0x92), None);
 //! assert_eq!(parser.parse(0x76), None);
 //! assert_eq!(parser.parse(0x34), Some(MidiMessage::NoteOn(2.into(), 0x76.into(), 0x34.into())));
@@ -32,15 +38,16 @@
 
 #![no_std]
 #[warn(missing_debug_implementations, missing_docs)]
-mod parse;
-mod render;
+pub mod parse;
+pub mod render;
+pub mod render_slice;
 
-pub use {crate::parse::*, crate::render::*, midi_types};
+pub use midi_types;
 
 #[cfg(test)]
 pub(crate) mod test {
     use {
-        crate::{parse::MidiTryParseSlice, render::MidiRenderSlice},
+        crate::{parse::MidiTryParseSlice, render_slice::MidiRenderSlice},
         midi_types::{Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7},
     };
 
