@@ -226,7 +226,7 @@ impl MidiByteStreamParser {
                 }
                 MidiParserState::PitchBendFirstByteRecvd(channel, byte1) => {
                     self.state = MidiParserState::PitchBendRecvd(channel);
-                    Some(MidiMessage::PitchBendChange(channel, (byte1, byte).into()))
+                    Some(MidiMessage::PitchBendChange(channel, (byte, byte1).into()))
                 }
                 MidiParserState::QuarterFrameRecvd => Some(MidiMessage::QuarterFrame(byte.into())),
                 MidiParserState::SongPositionRecvd => {
