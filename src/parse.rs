@@ -524,7 +524,7 @@ mod tests {
     fn should_parse_pitchbend() {
         MidiByteStreamParser::new().assert_result(
             &[0xE8, 0x14, 0x56],
-            &[MidiMessage::PitchBendChange(8.into(), (0x14, 0x56).into())],
+            &[MidiMessage::PitchBendChange(8.into(), (0x56, 0x14).into())],
         );
     }
 
@@ -536,10 +536,48 @@ mod tests {
                 0x43, 0x01, // Second pitchbend without status byte
             ],
             &[
-                MidiMessage::PitchBendChange(3.into(), (0x3c, 0x18).into()),
-                MidiMessage::PitchBendChange(3.into(), (0x43, 0x01).into()),
+                MidiMessage::PitchBendChange(3.into(), (0x18, 0x3c).into()),
+                MidiMessage::PitchBendChange(3.into(), (0x01, 0x43).into()),
             ],
         );
+    }
+
+    #[test]
+    fn should_parse_pitchbend_0_0_to_negative_1() {
+        let mut parser = MidiByteStreamParser::new();
+        parser.parse(0xE1);
+        parser.parse(0x00);
+        let msg = parser.parse(0x00);
+
+        match msg {
+            Some(MidiMessage::PitchBendChange(_, val_u14)) => assert_eq!(f32::from(val_u14), -1.0),
+            _ => assert!(false),
+        }
+    }
+
+    #[test]
+    fn should_parse_pitchbend_midway_to_zero() {
+        let mut parser = MidiByteStreamParser::new();
+        parser.parse(0xE1);
+        parser.parse(0x00);
+        let msg = parser.parse(0x40);
+
+        match msg {
+            Some(MidiMessage::PitchBendChange(_, val_u14)) => assert_eq!(f32::from(val_u14), 0.0),
+            _ => assert!(false),
+        }
+    }
+    #[test]
+    fn should_parse_pitchbend_fullscale_to_positive_1() {
+        let mut parser = MidiByteStreamParser::new();
+        parser.parse(0xE1);
+        parser.parse(0x7F);
+        let msg = parser.parse(0x7F);
+
+        match msg {
+            Some(MidiMessage::PitchBendChange(_, val_u14)) => assert_eq!(f32::from(val_u14), 1.0),
+            _ => assert!(false),
+        }
     }
 
     #[test]
