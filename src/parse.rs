@@ -47,7 +47,7 @@ enum MidiParserState {
     ChannelPressureRecvd(Channel),
 
     PitchBendRecvd(Channel),
-    PitchBendFirstByteRecvd(Channel, u8),
+    PitchBendLsbRecvd(Channel, u8),
 
     QuarterFrameRecvd,
 
@@ -221,12 +221,12 @@ impl MidiByteStreamParser {
                 }
 
                 MidiParserState::PitchBendRecvd(channel) => {
-                    self.state = MidiParserState::PitchBendFirstByteRecvd(channel, byte);
+                    self.state = MidiParserState::PitchBendLsbRecvd(channel, byte);
                     None
                 }
-                MidiParserState::PitchBendFirstByteRecvd(channel, byte1) => {
+                MidiParserState::PitchBendLsbRecvd(channel, lsb) => {
                     self.state = MidiParserState::PitchBendRecvd(channel);
-                    Some(MidiMessage::PitchBendChange(channel, (byte, byte1).into()))
+                    Some(MidiMessage::PitchBendChange(channel, (byte, lsb).into()))
                 }
                 MidiParserState::QuarterFrameRecvd => Some(MidiMessage::QuarterFrame(byte.into())),
                 MidiParserState::SongPositionRecvd => {
