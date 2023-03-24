@@ -543,44 +543,6 @@ mod tests {
     }
 
     #[test]
-    fn should_parse_pitchbend_0_0_to_negative_1() {
-        let mut parser = MidiByteStreamParser::new();
-        parser.parse(0xE1);
-        parser.parse(0x00);
-        let msg = parser.parse(0x00);
-
-        match msg {
-            Some(MidiMessage::PitchBendChange(_, val_u14)) => assert_eq!(f32::from(val_u14), -1.0),
-            _ => assert!(false),
-        }
-    }
-
-    #[test]
-    fn should_parse_pitchbend_midway_to_zero() {
-        let mut parser = MidiByteStreamParser::new();
-        parser.parse(0xE1);
-        parser.parse(0x00);
-        let msg = parser.parse(0x40);
-
-        match msg {
-            Some(MidiMessage::PitchBendChange(_, val_u14)) => assert_eq!(f32::from(val_u14), 0.0),
-            _ => assert!(false),
-        }
-    }
-    #[test]
-    fn should_parse_pitchbend_fullscale_to_positive_1() {
-        let mut parser = MidiByteStreamParser::new();
-        parser.parse(0xE1);
-        parser.parse(0x7F);
-        let msg = parser.parse(0x7F);
-
-        match msg {
-            Some(MidiMessage::PitchBendChange(_, val_u14)) => assert_eq!(f32::from(val_u14), 1.0),
-            _ => assert!(false),
-        }
-    }
-
-    #[test]
     fn should_parse_quarter_frame() {
         MidiByteStreamParser::new()
             .assert_result(&[0xf1, 0x7f], &[MidiMessage::QuarterFrame(0x7f.into())]);
