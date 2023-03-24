@@ -59,8 +59,8 @@ impl MidiRenderSlice for MidiMessage {
             MidiMessage::KeyPressure(c, n, v) => chan3byte(buf, KEY_PRESSURE, c, n, v),
             MidiMessage::ControlChange(c, n, v) => chan3byte(buf, CONTROL_CHANGE, c, n, v),
             MidiMessage::PitchBendChange(c, v) => {
-                let (v0, v1): (u8, u8) = (*v).into();
-                chan3byte(buf, PITCH_BEND_CHANGE, c, &v0, &v1)
+                let (msb, lsb): (u8, u8) = (*v).into();
+                chan3byte(buf, PITCH_BEND_CHANGE, c, &lsb, &msb)
             }
             MidiMessage::SongPositionPointer(v) => {
                 let (v0, v1): (u8, u8) = (*v).into();
