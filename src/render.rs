@@ -63,8 +63,8 @@ impl MidiRenderSlice for MidiMessage {
                 chan3byte(buf, PITCH_BEND_CHANGE, c, &lsb, &msb)
             }
             MidiMessage::SongPositionPointer(v) => {
-                let (v0, v1): (u8, u8) = (*v).into();
-                chan3byte(buf, SONG_POSITION_POINTER, &0, &v0, &v1)
+                let (msb, lsb): (u8, u8) = (*v).into();
+                chan3byte(buf, SONG_POSITION_POINTER, &0, &lsb, &msb)
             }
             MidiMessage::ProgramChange(c, p) => chan2byte(buf, PROGRAM_CHANGE, c, p),
             MidiMessage::ChannelPressure(c, p) => chan2byte(buf, CHANNEL_PRESSURE, c, p),

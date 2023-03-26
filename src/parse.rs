@@ -235,7 +235,7 @@ impl MidiByteStreamParser {
                 }
                 MidiParserState::SongPositionLsbRecvd(lsb) => {
                     self.state = MidiParserState::SongPositionRecvd;
-                    Some(MidiMessage::SongPositionPointer((lsb, byte).into()))
+                    Some(MidiMessage::SongPositionPointer((byte, lsb).into()))
                 }
                 MidiParserState::SongSelectRecvd => Some(MidiMessage::SongSelect(byte.into())),
                 _ => None,
@@ -566,7 +566,7 @@ mod tests {
     fn should_parse_song_position_pointer() {
         MidiByteStreamParser::new().assert_result(
             &[0xf2, 0x7f, 0x68],
-            &[MidiMessage::SongPositionPointer((0x7f, 0x68).into())],
+            &[MidiMessage::SongPositionPointer((0x68, 0x7f).into())],
         );
     }
 
@@ -578,8 +578,8 @@ mod tests {
                 0x23, 0x7b, // Only send data of next song position pointer
             ],
             &[
-                MidiMessage::SongPositionPointer((0x7f, 0x68).into()),
-                MidiMessage::SongPositionPointer((0x23, 0x7b).into()),
+                MidiMessage::SongPositionPointer((0x68, 0x7f).into()),
+                MidiMessage::SongPositionPointer((0x7b, 0x23).into()),
             ],
         );
     }
