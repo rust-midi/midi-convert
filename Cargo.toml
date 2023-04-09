@@ -2,7 +2,7 @@
 name = "midi-convert"
 version = "0.1.2"
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.62.1"
 
 authors = [
     "Mendelt Siebenga <msiebenga@gmail.com>",
@@ -16,7 +16,7 @@ keywords = ["midi"]
 readme = "README.md"
 
 [dependencies]
-midi-types = { version = "0.1.6" }
+midi-types = { version = "0.1.7" }
 defmt = { version = "0.3.2", optional = true }
 
 [dev-dependencies]
