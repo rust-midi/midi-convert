@@ -1,8 +1,8 @@
 [package]
 name = "midi-convert"
 version = "0.2.0"
-edition = "2021"
-rust-version = "1.62.1"
+edition = "2024"
+rust-version = "1.85.0"
 
 authors = [
     "Mendelt Siebenga <msiebenga@gmail.com>",
