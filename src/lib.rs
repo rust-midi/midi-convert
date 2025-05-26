@@ -51,51 +51,51 @@ pub(crate) mod test {
         midi_types::{Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value7, Value14},
     };
 
-    lazy_static::lazy_static! {
-        pub(crate) static ref TEST_1BYTE: [MidiMessage; 7] = [
-            MidiMessage::TuneRequest,
-            MidiMessage::TimingClock,
-            MidiMessage::Start,
-            MidiMessage::Continue,
-            MidiMessage::Stop,
-            MidiMessage::ActiveSensing,
-            MidiMessage::Reset,
-        ];
-        pub(crate) static ref TEST_2BYTE: [MidiMessage; 4] = [
-            MidiMessage::ProgramChange(Channel::from(0), Program::from(0)),
-            MidiMessage::ChannelPressure(Channel::from(1), Value7::from(2)),
-            MidiMessage::QuarterFrame(QuarterFrame::from(23)),
-            MidiMessage::SongSelect(Value7::from(3)),
-        ];
-        pub(crate) static ref TEST_3BYTE: [MidiMessage; 6] = [
-            MidiMessage::NoteOff(Channel::from(2), Note::from(3), Value7::from(1)),
-            MidiMessage::NoteOn(Channel::from(3), Note::from(120), Value7::from(120)),
-            MidiMessage::KeyPressure(Channel::from(3), Note::from(120), Value7::from(1)),
-            MidiMessage::ControlChange(Channel::from(5), Control::from(23), Value7::from(23)),
-            MidiMessage::PitchBendChange(Channel::from(15), Value14::from((23, 23))),
-            MidiMessage::SongPositionPointer(Value14::from((0, 0))),
-        ];
-    }
+    pub(crate) const TEST_1BYTE: [MidiMessage; 7] = [
+        MidiMessage::TuneRequest,
+        MidiMessage::TimingClock,
+        MidiMessage::Start,
+        MidiMessage::Continue,
+        MidiMessage::Stop,
+        MidiMessage::ActiveSensing,
+        MidiMessage::Reset,
+    ];
+
+    pub(crate) const TEST_2BYTE: [MidiMessage; 4] = [
+        MidiMessage::ProgramChange(Channel::new(0), Program::new(0)),
+        MidiMessage::ChannelPressure(Channel::new(1), Value7::new(2)),
+        MidiMessage::QuarterFrame(QuarterFrame::new(23)),
+        MidiMessage::SongSelect(Value7::new(3)),
+    ];
+
+    pub(crate) const TEST_3BYTE: [MidiMessage; 6] = [
+        MidiMessage::NoteOff(Channel::new(2), Note::new(3), Value7::new(1)),
+        MidiMessage::NoteOn(Channel::new(3), Note::new(120), Value7::new(120)),
+        MidiMessage::KeyPressure(Channel::new(3), Note::new(120), Value7::new(1)),
+        MidiMessage::ControlChange(Channel::new(5), Control::new(23), Value7::new(23)),
+        MidiMessage::PitchBendChange(Channel::new(15), Value14::new(23, 23)),
+        MidiMessage::SongPositionPointer(Value14::new(0, 0)),
+    ];
 
     #[test]
     fn parse_rendered() {
         let mut buf3 = [0, 0, 0];
         let mut buf100 = [0; 100];
-        for v in (*TEST_1BYTE).iter() {
+        for v in TEST_1BYTE.iter() {
             assert_eq!(1, v.render_slice(&mut buf3), "{:?}", v);
             assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf3.as_slice()));
             assert_eq!(1, v.render_slice(&mut buf100), "{:?}", v);
             assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf100.as_slice()));
         }
 
-        for v in (*TEST_2BYTE).iter() {
+        for v in TEST_2BYTE.iter() {
             assert_eq!(2, v.render_slice(&mut buf3), "{:?}", v);
             assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf3.as_slice()));
             assert_eq!(2, v.render_slice(&mut buf100), "{:?}", v);
             assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf100.as_slice()));
         }
 
-        for v in (*TEST_3BYTE).iter() {
+        for v in TEST_3BYTE.iter() {
             assert_eq!(3, v.render_slice(&mut buf3), "{:?}", v);
             assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf3.as_slice()));
             assert_eq!(3, v.render_slice(&mut buf100), "{:?}", v);

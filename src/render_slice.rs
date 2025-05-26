@@ -92,52 +92,52 @@ mod test {
     #[should_panic]
     fn render_1_0_panic() {
         let mut buf: [u8; 0] = [];
-        (*TEST_1BYTE)[0].render_slice(&mut buf);
+        TEST_1BYTE[0].render_slice(&mut buf);
     }
 
     #[test]
     #[should_panic]
     fn render_1_1_panic() {
         let mut buf: [u8; 1] = [0; 1];
-        (*TEST_1BYTE)[0].render_slice(&mut buf);
+        TEST_1BYTE[0].render_slice(&mut buf);
     }
 
     #[test]
     #[should_panic]
     fn render_1_2_panic() {
         let mut buf: [u8; 2] = [0; 2];
-        (*TEST_1BYTE)[0].render_slice(&mut buf);
+        TEST_1BYTE[0].render_slice(&mut buf);
     }
 
     #[test]
     #[should_panic]
     fn render_2_2_panic() {
         let mut buf: [u8; 2] = [0; 2];
-        (*TEST_2BYTE)[0].render_slice(&mut buf);
+        TEST_2BYTE[0].render_slice(&mut buf);
     }
 
     #[test]
     #[should_panic]
     fn render_3_1_panic() {
         let mut buf: [u8; 2] = [0; 2];
-        (*TEST_3BYTE)[0].render_slice(&mut buf);
+        TEST_3BYTE[0].render_slice(&mut buf);
     }
 
     #[test]
     fn render_ok() {
         let mut buf3 = [0, 0, 0];
         let mut buf100 = [0; 100];
-        for v in (*TEST_1BYTE).iter() {
+        for v in TEST_1BYTE.iter() {
             assert_eq!(1, v.render_slice(&mut buf3), "{:?}", v);
             assert_eq!(1, v.render_slice(&mut buf100), "{:?}", v);
         }
 
-        for v in (*TEST_2BYTE).iter() {
+        for v in TEST_2BYTE.iter() {
             assert_eq!(2, v.render_slice(&mut buf3), "{:?}", v);
             assert_eq!(2, v.render_slice(&mut buf100), "{:?}", v);
         }
 
-        for v in (*TEST_3BYTE).iter() {
+        for v in TEST_3BYTE.iter() {
             assert_eq!(3, v.render_slice(&mut buf3), "{:?}", v);
             assert_eq!(3, v.render_slice(&mut buf100), "{:?}", v);
         }
