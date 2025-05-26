@@ -83,30 +83,30 @@ pub(crate) mod test {
         let mut buf100 = [0; 100];
         for v in (*TEST_1BYTE).iter() {
             assert_eq!(1, v.render_slice(&mut buf3), "{:?}", v);
-            assert_eq!(Ok(v.clone()), MidiMessage::try_parse_slice(buf3.as_slice()));
+            assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf3.as_slice()));
             assert_eq!(1, v.render_slice(&mut buf100), "{:?}", v);
             assert_eq!(
-                Ok(v.clone()),
+                Ok(*v),
                 MidiMessage::try_parse_slice(buf100.as_slice())
             );
         }
 
         for v in (*TEST_2BYTE).iter() {
             assert_eq!(2, v.render_slice(&mut buf3), "{:?}", v);
-            assert_eq!(Ok(v.clone()), MidiMessage::try_parse_slice(buf3.as_slice()));
+            assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf3.as_slice()));
             assert_eq!(2, v.render_slice(&mut buf100), "{:?}", v);
             assert_eq!(
-                Ok(v.clone()),
+                Ok(*v),
                 MidiMessage::try_parse_slice(buf100.as_slice())
             );
         }
 
         for v in (*TEST_3BYTE).iter() {
             assert_eq!(3, v.render_slice(&mut buf3), "{:?}", v);
-            assert_eq!(Ok(v.clone()), MidiMessage::try_parse_slice(buf3.as_slice()));
+            assert_eq!(Ok(*v), MidiMessage::try_parse_slice(buf3.as_slice()));
             assert_eq!(3, v.render_slice(&mut buf100), "{:?}", v);
             assert_eq!(
-                Ok(v.clone()),
+                Ok(*v),
                 MidiMessage::try_parse_slice(buf100.as_slice())
             );
         }

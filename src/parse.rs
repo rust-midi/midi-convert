@@ -784,7 +784,7 @@ mod tests {
         /// Test helper function, asserts if a slice of bytes parses to some set of midi events
         fn assert_result(&mut self, bytes: &[u8], expected_events: &[MidiMessage]) {
             let events: Vec<MidiMessage> = bytes
-                .into_iter()
+                .iter()
                 .filter_map(|byte| self.parse(*byte))
                 .collect();
 
