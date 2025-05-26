@@ -1,6 +1,6 @@
 //! Parse midi messages
 use midi_types::{
-    status::*, Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7,
+    Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value7, Value14, status::*,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

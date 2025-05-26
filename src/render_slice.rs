@@ -1,6 +1,6 @@
 //! Render message to a byte buffer
 
-use midi_types::{status::*, MidiMessage};
+use midi_types::{MidiMessage, status::*};
 
 /// Trait for rendering a MidiMessage into a byte slice.
 pub trait MidiRenderSlice: Sized {

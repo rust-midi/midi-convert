@@ -1,4 +1,4 @@
-use midi_types::{status::*, MidiMessage};
+use midi_types::{MidiMessage, status::*};
 
 /// This trait abstracts the transport mechanism for the MidiRenderer. An instance of a type that implements this trait can be used by the MidiRenderer to write midi-messages
 pub trait MidiTransport {

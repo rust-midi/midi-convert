@@ -48,7 +48,7 @@ pub use midi_types;
 pub(crate) mod test {
     use {
         crate::{parse::MidiTryParseSlice, render_slice::MidiRenderSlice},
-        midi_types::{Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value14, Value7},
+        midi_types::{Channel, Control, MidiMessage, Note, Program, QuarterFrame, Value7, Value14},
     };
 
     lazy_static::lazy_static! {
