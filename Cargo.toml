@@ -16,7 +16,7 @@ keywords = ["midi"]
 readme = "README.md"
 
 [dependencies]
-midi-types = { version = "0.2.0" }
+midi-types = { version = "0.2.1" }
 defmt = { version = "1.0", optional = true }
 
 [dev-dependencies]
